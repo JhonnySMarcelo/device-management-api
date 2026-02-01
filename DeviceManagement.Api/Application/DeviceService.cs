@@ -23,5 +23,11 @@ namespace DeviceManagementApi.Application
 
             return device;
         }
+
+        public async Task<Device?> GetByIdAsync(Guid id)
+        {
+            return await _dbContext.Devices
+                .FirstOrDefaultAsync(d => d.Id == id);
+        }
     }
 }

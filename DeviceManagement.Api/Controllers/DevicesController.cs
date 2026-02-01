@@ -16,15 +16,15 @@ namespace DeviceManagementApi.Controllers
             _deviceService = deviceService;
         }
 
-        [HttpGet]
-        public ActionResult<Device> Get()
+        [HttpGet("{id:guid}")]
+        public async Task<ActionResult<Device>> GetById(Guid id)
         {
-            string name = "Temperature Sensor";
-            string brand = "Bosch";
+            var device = await _deviceService.GetByIdAsync(id);
 
-            var device = new Device(name, brand);
-
-            return device;
+            if (device == null)
+                return NotFound();
+            
+            return Ok(device);
         }
 
         [HttpPost]
@@ -35,7 +35,7 @@ namespace DeviceManagementApi.Controllers
                 );
 
             return CreatedAtAction(
-                nameof(Get),
+                nameof(GetById),
                 new { id = device.Id },
                 device
                 );

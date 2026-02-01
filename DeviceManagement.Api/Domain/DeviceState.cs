@@ -1,5 +1,8 @@
-﻿namespace DeviceManagementApi.Domain
+﻿using System.Text.Json.Serialization;
+
+namespace DeviceManagementApi.Domain
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum DeviceState
     {
         Available = 0,
