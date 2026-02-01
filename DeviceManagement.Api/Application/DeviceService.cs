@@ -29,5 +29,10 @@ namespace DeviceManagementApi.Application
             return await _dbContext.Devices
                 .FirstOrDefaultAsync(d => d.Id == id);
         }
+
+        public async Task<List<Device>> GetAllAsync()
+        {
+            return await _dbContext.Devices.ToListAsync();
+        }
     }
 }
