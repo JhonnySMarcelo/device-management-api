@@ -1,4 +1,4 @@
-using DeviceManagement.Api.Infrastructure;
+using DeviceManagementApi.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

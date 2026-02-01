@@ -1,7 +1,7 @@
-﻿using DeviceManagement.Api.Domain;
+﻿using DeviceManagementApi.Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace DeviceManagement.Api.Infrastructure
+namespace DeviceManagementApi.Infrastructure
 {
     public class DeviceManagementDbContext : DbContext
     {

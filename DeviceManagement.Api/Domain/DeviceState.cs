@@ -1,4 +1,4 @@
-﻿namespace DeviceManagement.Api.Domain
+﻿namespace DeviceManagementApi.Domain
 {
     public enum DeviceState
     {

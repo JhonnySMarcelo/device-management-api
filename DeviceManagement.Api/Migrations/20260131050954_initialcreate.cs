@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace DeviceManagement.Api.Migrations
+namespace DeviceManagementApi.Migrations
 {
     /// <inheritdoc />
     public partial class initialcreate : Migration

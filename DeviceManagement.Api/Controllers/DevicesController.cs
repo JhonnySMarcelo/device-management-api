@@ -1,7 +1,7 @@
-using DeviceManagement.Api.Domain;
+using DeviceManagementApi.Domain;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DeviceManagement.Api.Controllers
+namespace DeviceManagementApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
