@@ -60,5 +60,16 @@ namespace DeviceManagementApi.Controllers
 
             return Ok(devices);
         }
+
+        [HttpGet("state/{state}")]
+        public async Task<ActionResult<List<Device>>> GetAllByState(DeviceState state)
+        {
+            var devices = await _deviceService.GetAllByStateAsync(state);
+
+            if (devices.Count == 0) return NotFound();
+
+            return Ok(devices);
+        }
+
     }
 }

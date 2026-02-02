@@ -44,5 +44,12 @@ namespace DeviceManagementApi.Application
                 .Where(d => d.Brand == brand)
                 .ToListAsync();
         }
+
+        public async Task<List<Device>> GetAllByStateAsync(DeviceState state)
+        {
+            return await _dbContext.Devices
+                .Where(d => d.State == state)
+                .ToListAsync();
+        }
     }
 }
