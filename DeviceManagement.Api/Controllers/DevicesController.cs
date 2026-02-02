@@ -36,8 +36,7 @@ namespace DeviceManagementApi.Controllers
         {
             var device = await _deviceService.GetByIdAsync(id);
 
-            if (device == null)
-                return NotFound();
+            if (device == null) return NotFound();
 
             return Ok(device);
         }
@@ -52,5 +51,14 @@ namespace DeviceManagementApi.Controllers
             return Ok(devices);
         }
 
+        [HttpGet("brand/{brand}")]
+        public async Task<ActionResult<List<Device>>> GetAllByBrand(string brand)
+        {
+            var devices = await _deviceService.GetAllByBrandAsync(brand);
+
+            if (devices.Count == 0) return NotFound();
+
+            return Ok(devices);
+        }
     }
 }

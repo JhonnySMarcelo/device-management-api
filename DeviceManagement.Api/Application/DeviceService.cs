@@ -34,5 +34,15 @@ namespace DeviceManagementApi.Application
         {
             return await _dbContext.Devices.ToListAsync();
         }
+
+        public async Task<List<Device>> GetAllByBrandAsync(string brand)
+        {
+            if (string.IsNullOrWhiteSpace(brand))
+                throw new InvalidOperationException("Brand is required.");
+
+            return await _dbContext.Devices
+                .Where(d => d.Brand == brand)
+                .ToListAsync();
+        }
     }
 }
