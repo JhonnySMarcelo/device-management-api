@@ -139,6 +139,39 @@ Server=host.docker.internal;Database=DeviceManagement;User Id=<user>;Password=<p
 
 ---
 
+---
+
+# Future Improvements
+
+This section outlines potential improvements and missing features.
+
+## Future Improvements / Possible Missing or Malfunctioning Parts
+
+- _SQL Server Connection Handling_
+  - Currently, if the API cannot connect to the database, it may throw a generic exception and return a 500 Internal Server Error.
+  - Future improvement: handle SQL connection exceptions gracefully, returning a 503 Service Unavailable with a clear message and logging the issue.
+
+- _Global Exception Handling Middleware_
+  - Business rule conflicts (InvalidOperationException) are currently handled in controllers individually.
+  - Future improvement: implement a global exception handling middleware to capture all unhandled exceptions, standardize the response with ProblemDetails, and log errors consistently.
+
+- _Request Validation_
+  - Input validation currently relies on basic checks in DTOs.
+  - Future improvement: use FluentValidation or DataAnnotations for robust request validation and standardized ValidationProblemDetails responses.
+
+- _Swagger examples_
+  - Add example for all requests for all endpoints incluinding minimal and complete examples
+  - Add example for all responses for all endpoints
+
+- _Logging and Monitoring_
+  - No centralized logging or metrics collection is currently implemented.
+  - Future improvement: integrate Serilog, Application Insights, or another logging/monitoring solution.
+
+- _Missing Features_
+  - Endpoint for bulk updates of devices.
+  - Advanced filtering with search and pagination.
+  - Soft delete instead of hard delete to prevent accidental data loss.
+
 ## Authors
 
 - Jhonny Marcelo
