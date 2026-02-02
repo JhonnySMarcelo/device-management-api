@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="DeviceManagement.Api/DeviceManagementApi.csproj" />
+  <Project Path="DeviceManagementApi.Tests/DeviceManagementApi.Tests.csproj" Id="35cc0c87-72e2-4819-8e8d-5a30479ba29b" />
 </Solution>
