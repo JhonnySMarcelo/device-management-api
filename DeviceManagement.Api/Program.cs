@@ -1,6 +1,9 @@
 using DeviceManagementApi.Application;
 using DeviceManagementApi.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +19,26 @@ builder.Services.AddDbContext<DeviceManagementDbContext>(options =>
 builder.Services.AddScoped<DeviceService>();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Device Management API",
+        Version = "v1",
+        Description = """
+        REST API for managing devices.
+
+        Features:
+        - Create, update, retrieve and delete devices
+        - Filter devices by brand and state
+        """
+    });
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+});
+
 
 var app = builder.Build();
 
