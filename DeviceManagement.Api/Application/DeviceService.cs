@@ -81,5 +81,18 @@ namespace DeviceManagementApi.Application
             return device;
         }
 
+        public async Task<bool?> DeleteAsync(Guid id)
+        {
+            var device = await _dbContext.Devices.FindAsync(id);
+            if (device == null) return null;
+
+            if (device.State == DeviceState.InUse)
+                throw new InvalidOperationException("Device is in use and cannot be deleted.");
+
+            _dbContext.Devices.Remove(device);
+            await _dbContext.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

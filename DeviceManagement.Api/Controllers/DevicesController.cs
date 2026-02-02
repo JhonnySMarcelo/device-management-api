@@ -87,5 +87,23 @@ namespace DeviceManagementApi.Controllers
                 return Conflict(ex.Message);
             }
         }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            try
+            {
+                var deleted = await _deviceService.DeleteAsync(id);
+
+                if (deleted == null) return NotFound();
+
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+        }
+
     }
 }
