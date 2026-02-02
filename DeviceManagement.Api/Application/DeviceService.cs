@@ -51,5 +51,35 @@ namespace DeviceManagementApi.Application
                 .Where(d => d.State == state)
                 .ToListAsync();
         }
+
+        public async Task<Device?> UpdateAsync(Guid id, UpdateDeviceRequest request)
+        {
+            var device = await _dbContext.Devices.FindAsync(id);
+
+            if (device == null) return null;
+
+            bool isInUse = device.State == DeviceState.InUse;
+
+            if (isInUse &&
+                (!string.IsNullOrWhiteSpace(request.Name) || !string.IsNullOrWhiteSpace(request.Brand)))
+            {
+                throw new InvalidOperationException("Device is in use: Name and Brand cannot be changed.");
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(request.Name))
+                    device.ChangeName(request.Name);
+
+                if (!string.IsNullOrWhiteSpace(request.Brand))
+                    device.ChangeBrand(request.Brand);
+            }
+
+            if (request.State.HasValue)
+                device.ChangeState(request.State.Value);
+
+            await _dbContext.SaveChangesAsync();
+            return device;
+        }
+
     }
 }

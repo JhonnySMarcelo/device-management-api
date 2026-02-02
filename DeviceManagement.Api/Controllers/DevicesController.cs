@@ -18,7 +18,7 @@ namespace DeviceManagementApi.Controllers
 
         [HttpPost]
         public async Task<ActionResult<Device>> Create(CreateDeviceRequest request)
-        { 
+        {
             var device = await _deviceService.CreateAsync(
                 request.Name, request.Brand
                 );
@@ -71,5 +71,21 @@ namespace DeviceManagementApi.Controllers
             return Ok(devices);
         }
 
+        [HttpPatch("{id:guid}")]
+        public async Task<ActionResult<Device>> Update(Guid id, UpdateDeviceRequest request)
+        {
+            try
+            {
+                var updatedDevice = await _deviceService.UpdateAsync(id, request);
+
+                if (updatedDevice == null) return NotFound();
+
+                return Ok(updatedDevice);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+        }
     }
 }

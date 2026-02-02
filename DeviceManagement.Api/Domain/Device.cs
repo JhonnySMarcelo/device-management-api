@@ -24,11 +24,25 @@ namespace DeviceManagementApi.Domain
 
         public void ChangeState(DeviceState newState)
         {
-            if (newState == State)
-                return;
+            if (newState == State) return;
 
             State = newState;
         }
 
+        internal void ChangeName(string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName))
+                throw new InvalidOperationException("Device name is required.");
+
+            Name = newName;
+        }
+
+        internal void ChangeBrand(string newBrand)
+        {
+            if (string.IsNullOrWhiteSpace(newBrand))
+                throw new InvalidOperationException("Device brand is required.");
+
+            Brand = newBrand;
+        }
     }
 }
