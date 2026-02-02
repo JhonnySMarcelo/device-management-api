@@ -1,0 +1,7 @@
+﻿Dockerfile
+.dockerignore
+bin/
+obj/
+.vs/
+*.user
+*.suo
