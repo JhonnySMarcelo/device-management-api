@@ -29,7 +29,7 @@ namespace DeviceManagementApi.Domain
             State = newState;
         }
 
-        internal void ChangeName(string newName)
+        public void ChangeName(string newName)
         {
             if (string.IsNullOrWhiteSpace(newName))
                 throw new InvalidOperationException("Device name is required.");
@@ -37,7 +37,7 @@ namespace DeviceManagementApi.Domain
             Name = newName;
         }
 
-        internal void ChangeBrand(string newBrand)
+        public void ChangeBrand(string newBrand)
         {
             if (string.IsNullOrWhiteSpace(newBrand))
                 throw new InvalidOperationException("Device brand is required.");
