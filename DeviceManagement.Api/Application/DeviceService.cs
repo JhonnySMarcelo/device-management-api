@@ -30,26 +30,17 @@ namespace DeviceManagementApi.Application
                 .FirstOrDefaultAsync(d => d.Id == id);
         }
 
-        public async Task<List<Device>> GetAllAsync()
+        public async Task<List<Device>> GetAllAsync(string? brand = null, DeviceState? state = null)
         {
-            return await _dbContext.Devices.ToListAsync();
-        }
+            var query = _dbContext.Devices.AsQueryable();
 
-        public async Task<List<Device>> GetAllByBrandAsync(string brand)
-        {
-            if (string.IsNullOrWhiteSpace(brand))
-                throw new InvalidOperationException("Brand is required.");
+            if (!string.IsNullOrWhiteSpace(brand))
+                query = query.Where(d => d.Brand == brand); 
 
-            return await _dbContext.Devices
-                .Where(d => d.Brand == brand)
-                .ToListAsync();
-        }
+            if (state.HasValue)
+                query = query.Where(d => d.State == state.Value);
 
-        public async Task<List<Device>> GetAllByStateAsync(DeviceState state)
-        {
-            return await _dbContext.Devices
-                .Where(d => d.State == state)
-                .ToListAsync();
+            return await query.AsNoTracking().ToListAsync();
         }
 
         public async Task<Device?> UpdateAsync(Guid id, UpdateDeviceRequest request)

@@ -55,40 +55,16 @@ namespace DeviceManagementApi.Controllers
         }
 
         /// <summary>
-        /// Retrieves all devices.
+        /// Retrieves all devices, optionally filtered by brand and/or state.
         /// </summary>
+        /// <param name="brand">Optional brand name to filter devices</param>
+        /// <param name="state">Optional device state to filter</param>
         /// <response code="200">Devices found</response>
         [HttpGet]
         [ProducesResponseType(typeof(List<Device>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<Device>>> GetAll()
+        public async Task<ActionResult<List<Device>>> GetAll([FromQuery] string? brand, [FromQuery] DeviceState? state)
         {
-            var devices = await _deviceService.GetAllAsync();
-            return Ok(devices);
-        }
-
-        /// <summary>
-        /// Retrieves devices filtered by brand.
-        /// </summary>
-        /// <param name="brand">Brand name to filter devices</param>
-        /// <response code="200">Devices found</response>
-        [HttpGet("brand/{brand}")]
-        [ProducesResponseType(typeof(List<Device>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<Device>>> GetAllByBrand(string brand)
-        {
-            var devices = await _deviceService.GetAllByBrandAsync(brand);
-            return Ok(devices);
-        }
-
-        /// <summary>
-        /// Retrieves devices filtered by state.
-        /// </summary>
-        /// <param name="state">Device state to filter</param>
-        /// <response code="200">Devices found</response>
-        [HttpGet("state/{state}")]
-        [ProducesResponseType(typeof(List<Device>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<Device>>> GetAllByState(DeviceState state)
-        {
-            var devices = await _deviceService.GetAllByStateAsync(state);
+            var devices = await _deviceService.GetAllAsync(brand, state);
             return Ok(devices);
         }
 
