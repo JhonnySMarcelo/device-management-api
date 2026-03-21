@@ -144,5 +144,48 @@ namespace DeviceManagementApi.Tests.Application.DeviceServiceTests
             Assert.Single(result);
             Assert.Equal("Bosch", result[0].Brand, ignoreCase: true);
         }
+
+        [Fact]
+        public async Task GetAllAsync_WhenStateIsNull_ShouldReturnAllDevices()
+        {
+            var context = GetDbContext();
+            var service = new DeviceService(context);
+            await service.CreateAsync("Sensor1", "Bosch");
+            await service.CreateAsync("Sensor2", "Siemens");
+
+            var result = await service.GetAllAsync(state: null);
+
+            Assert.Equal(2, result.Count);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithEmptyBrand_ShouldReturnAllDevices()
+        {
+            var context = GetDbContext();
+            var service = new DeviceService(context);
+            await service.CreateAsync("Sensor1", "Bosch");
+            await service.CreateAsync("Sensor2", "Siemens");
+
+            var result = await service.GetAllAsync("   ");
+
+            Assert.Equal(2, result.Count);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_WithBrandAndStateFilters_ShouldReturnMultipleDevices()
+        {
+            var context = GetDbContext();
+            var service = new DeviceService(context);
+            var d1 = await service.CreateAsync("Sensor1", "Bosch");
+            var d2 = await service.CreateAsync("Sensor2", "Bosch");
+            d1.ChangeState(DeviceState.InUse);
+            d2.ChangeState(DeviceState.InUse);
+            context.SaveChanges();
+
+            var result = await service.GetAllAsync("Bosch", DeviceState.InUse);
+
+            Assert.Equal(2, result.Count);
+        }
+
     }
 }
