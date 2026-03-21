@@ -35,6 +35,9 @@ namespace DeviceManagementApi.Infrastructure
 
                 entity.Property(d => d.CreationTime)
                       .IsRequired();
+
+                entity.HasIndex(d => d.Brand);
+                entity.HasIndex(d => d.State);
             });
         }
     }
