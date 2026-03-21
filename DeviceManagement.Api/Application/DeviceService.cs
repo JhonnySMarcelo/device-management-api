@@ -35,7 +35,7 @@ namespace DeviceManagementApi.Application
             var query = _dbContext.Devices.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(brand))
-                query = query.Where(d => d.Brand == brand); 
+                query = query.Where(d => d.Brand.Equals(brand, StringComparison.OrdinalIgnoreCase));
 
             if (state.HasValue)
                 query = query.Where(d => d.State == state.Value);
