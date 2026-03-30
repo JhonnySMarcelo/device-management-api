@@ -1,6 +1,6 @@
-using DeviceManagementApi.Application;
 using DeviceManagementApi.Application.DTOs;
-using DeviceManagementApi.Domain;
+using DeviceManagementApi.Application.Services;
+using DeviceManagementApi.Domain.Devices.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeviceManagementApi.Controllers
@@ -55,16 +55,15 @@ namespace DeviceManagementApi.Controllers
         }
 
         /// <summary>
-        /// Retrieves all devices, optionally filtered by brand and/or state.
+        /// Retrieves all devices. Supports optional filtering by brand and/or state via the `GetDevicesFilter` query parameter.
         /// </summary>
-        /// <param name="brand">Optional brand name to filter devices</param>
-        /// <param name="state">Optional device state to filter</param>
-        /// <response code="200">Devices found</response>
+        /// <param name="filter">Query filter containing optional `Brand` and `State` values used to restrict results.</param>
+        /// <response code="200">A list of devices that match the specified filter (or all devices if no filter is provided).</response>
         [HttpGet]
         [ProducesResponseType(typeof(List<Device>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<Device>>> GetAll([FromQuery] string? brand, [FromQuery] DeviceState? state)
+        public async Task<ActionResult<List<Device>>> GetAll([FromQuery] GetDevicesFilter filter)
         {
-            var devices = await _deviceService.GetAllAsync(brand, state);
+            var devices = await _deviceService.GetAllAsync(filter.Brand, filter.State);
             return Ok(devices);
         }
 
