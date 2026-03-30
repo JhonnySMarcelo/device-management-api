@@ -1,7 +1,8 @@
 using DeviceManagementApi.Application;
+using DeviceManagementApi.Filters;
 using DeviceManagementApi.Infrastructure;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using System.Reflection;
 
@@ -48,6 +49,13 @@ if (isDocker)
         options.ListenAnyIP(80);
     });
 }
+
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationActionFilter>();
+});
+
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 var app = builder.Build();
 
