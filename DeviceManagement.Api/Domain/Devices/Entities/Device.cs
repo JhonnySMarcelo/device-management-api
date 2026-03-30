@@ -1,4 +1,4 @@
-namespace DeviceManagementApi.Domain
+namespace DeviceManagementApi.Domain.Devices.Entities
 {
     public class Device
     {

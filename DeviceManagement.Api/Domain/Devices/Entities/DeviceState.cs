@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace DeviceManagementApi.Domain
+namespace DeviceManagementApi.Domain.Devices.Entities
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum DeviceState

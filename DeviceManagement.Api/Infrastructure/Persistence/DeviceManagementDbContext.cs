@@ -1,7 +1,7 @@
-﻿using DeviceManagementApi.Domain;
+﻿using DeviceManagementApi.Domain.Devices.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace DeviceManagementApi.Infrastructure
+namespace DeviceManagementApi.Infrastructure.Persistence
 {
     public class DeviceManagementDbContext : DbContext
     {
@@ -23,11 +23,13 @@ namespace DeviceManagementApi.Infrastructure
 
                 entity.Property(d => d.Name)
                       .IsRequired()
-                      .HasMaxLength(100);
+                      .HasMaxLength(100)
+                      .UseCollation("SQL_Latin1_General_CP1_CI_AS");
 
                 entity.Property(d => d.Brand)
                       .IsRequired()
-                      .HasMaxLength(100);
+                      .HasMaxLength(100)
+                      .UseCollation("SQL_Latin1_General_CP1_CI_AS");
 
                 entity.Property(d => d.State)
                       .IsRequired()

@@ -1,41 +1,40 @@
 ﻿using DeviceManagementApi.Application.DTOs;
-using DeviceManagementApi.Domain;
-using DeviceManagementApi.Infrastructure;
+using DeviceManagementApi.Domain.Devices.Entities;
+using DeviceManagementApi.Domain.Devices.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace DeviceManagementApi.Application
+namespace DeviceManagementApi.Application.Services
 {
     public class DeviceService
     {
-        private readonly DeviceManagementDbContext _dbContext;
+        private readonly IDeviceRepository _repository;
 
-        public DeviceService(DeviceManagementDbContext dbContext) 
+        public DeviceService(IDeviceRepository repository)
         {
-            _dbContext = dbContext;
+            _repository = repository;
         }
 
         public async Task<Device> CreateAsync(string name, string brand)
         {
             var device = new Device(name, brand);
 
-            _dbContext.Devices.Add(device);
-            await _dbContext.SaveChangesAsync();
+            await _repository.AddAsync(device);
+            await _repository.SaveChangesAsync();
 
             return device;
         }
 
         public async Task<Device?> GetByIdAsync(Guid id)
         {
-            return await _dbContext.Devices
-                .FirstOrDefaultAsync(d => d.Id == id);
+            return await _repository.GetByIdAsync(id);
         }
 
         public async Task<List<Device>> GetAllAsync(string? brand = null, DeviceState? state = null)
         {
-            var query = _dbContext.Devices.AsQueryable();
+            var query = _repository.GetAll();
 
-            if (!string.IsNullOrWhiteSpace(brand))
-                query = query.Where(d => d.Brand.Equals(brand, StringComparison.OrdinalIgnoreCase));
+            if (!string.IsNullOrEmpty(brand))
+                query = query.Where(d => d.Brand == brand);
 
             if (state.HasValue)
                 query = query.Where(d => d.State == state.Value);
@@ -45,7 +44,7 @@ namespace DeviceManagementApi.Application
 
         public async Task<Device?> UpdateAsync(Guid id, UpdateDeviceRequest request)
         {
-            var device = await _dbContext.Devices.FindAsync(id);
+            var device = await _repository.GetByIdAsync(id);
 
             if (device == null) return null;
 
@@ -68,20 +67,20 @@ namespace DeviceManagementApi.Application
             if (request.State.HasValue)
                 device.ChangeState(request.State.Value);
 
-            await _dbContext.SaveChangesAsync();
+            await _repository.SaveChangesAsync();
             return device;
         }
 
         public async Task<bool?> DeleteAsync(Guid id)
         {
-            var device = await _dbContext.Devices.FindAsync(id);
+            var device = await _repository.GetByIdAsync(id);
             if (device == null) return null;
 
             if (device.State == DeviceState.InUse)
                 throw new InvalidOperationException("Device is in use and cannot be deleted.");
 
-            _dbContext.Devices.Remove(device);
-            await _dbContext.SaveChangesAsync();
+            _repository.Delete(device);
+            await _repository.SaveChangesAsync();
 
             return true;
         }

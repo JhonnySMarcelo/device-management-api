@@ -1,6 +1,8 @@
-using DeviceManagementApi.Application;
+using DeviceManagementApi.Application.Services;
+using DeviceManagementApi.Domain.Devices.Repositories;
 using DeviceManagementApi.Filters;
-using DeviceManagementApi.Infrastructure;
+using DeviceManagementApi.Infrastructure.Persistence;
+using DeviceManagementApi.Infrastructure.Repositories;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -18,6 +20,7 @@ builder.Services.AddDbContext<DeviceManagementDbContext>(options =>
 });
 
 builder.Services.AddScoped<DeviceService>();
+builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

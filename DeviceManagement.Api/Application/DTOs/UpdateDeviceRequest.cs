@@ -1,4 +1,4 @@
-﻿using DeviceManagementApi.Domain;
+﻿using DeviceManagementApi.Domain.Devices.Entities;
 
 namespace DeviceManagementApi.Application.DTOs
 {
