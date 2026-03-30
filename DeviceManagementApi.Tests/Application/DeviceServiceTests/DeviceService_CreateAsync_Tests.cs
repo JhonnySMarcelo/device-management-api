@@ -1,31 +1,33 @@
-﻿using DeviceManagementApi.Application;
-using DeviceManagementApi.Domain;
-using DeviceManagementApi.Infrastructure;
-using Microsoft.EntityFrameworkCore;
+﻿using DeviceManagementApi.Application.Services;
+using DeviceManagementApi.Domain.Devices.Entities;
+using DeviceManagementApi.Domain.Devices.Repositories;
+using Moq;
 using Xunit;
 
 namespace DeviceManagementApi.Tests.Application.DeviceServiceTests
 {
     public class DeviceService_CreateAsync_Tests
     {
-        private static DeviceManagementDbContext GetDbContext()
-        {
-            var options = new DbContextOptionsBuilder<DeviceManagementDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+        private readonly Mock<IDeviceRepository> _mockRepo;
+        private readonly DeviceService _service;
 
-            return new DeviceManagementDbContext(options);
+        public DeviceService_CreateAsync_Tests()
+        {
+            _mockRepo = new Mock<IDeviceRepository>();
+            _service = new DeviceService(_mockRepo.Object);
         }
 
         [Fact]
         public async Task CreateAsync_Should_Create_Device()
         {
             //Arrange
-            var context = GetDbContext();
-            var service = new DeviceService(context);
+            _mockRepo.Setup(r => r.AddAsync(It.IsAny<Device>()))
+                    .Returns(Task.CompletedTask);
+            _mockRepo.Setup(r => r.SaveChangesAsync())
+                     .Returns(Task.CompletedTask);
 
             //Act
-            var device = await service.CreateAsync("Sensor", "Bosch");
+            var device = await _service.CreateAsync("Sensor", "Bosch");
 
             //Assert
             Assert.NotNull(device);
@@ -36,33 +38,47 @@ namespace DeviceManagementApi.Tests.Application.DeviceServiceTests
         }
 
         [Fact]
-        public async Task Should_Persist_Device_In_Database()
+        public async Task CreateAsync_Should_Set_State_To_Available()
         {
             // Arrange
-            var context = GetDbContext();
-            var service = new DeviceService(context);
+            _mockRepo.Setup(r => r.AddAsync(It.IsAny<Device>()))
+                     .Returns(Task.CompletedTask);
+            _mockRepo.Setup(r => r.SaveChangesAsync())
+                     .Returns(Task.CompletedTask);
 
             // Act
-            var device = await service.CreateAsync("Sensor", "Bosch");
+            var device = await _service.CreateAsync("Sensor", "Bosch");
 
             // Assert
-            var stored = await context.Devices.FindAsync(device.Id);
-            Assert.NotNull(stored);
+            Assert.Equal(DeviceState.Available, device.State);
+        }
+
+        [Fact]
+        public async Task CreateAsync_Should_Set_Id_NotEmpty()
+        {
+            // Arrange
+            _mockRepo.Setup(r => r.AddAsync(It.IsAny<Device>()))
+                     .Returns(Task.CompletedTask);
+            _mockRepo.Setup(r => r.SaveChangesAsync())
+                     .Returns(Task.CompletedTask);
+
+            // Act
+            var device = await _service.CreateAsync("Sensor", "Bosch");
+
+            // Assert
+            Assert.NotEqual(Guid.Empty, device.Id);
         }
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public async Task Should_Throw_InvalidOperationException_When_Name_Is_Invalid(string? invalidName)
+        public async Task CreateAsync_Should_Throw_When_Name_Invalid(string? invalidName)
         {
             // Arrange
-            var context = GetDbContext();
-            var service = new DeviceService(context);
-
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => service.CreateAsync(invalidName!, "Brand")
+                () => _service.CreateAsync(invalidName!, "Brand")
             );
         }
 
@@ -70,15 +86,12 @@ namespace DeviceManagementApi.Tests.Application.DeviceServiceTests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public async Task Should_Throw_InvalidOperationException_When_Brand_Is_Invalid(string? invalidBrand)
+        public async Task CreateAsync_Should_Throw_When_Brand_Invalid(string? invalidBrand)
         {
             // Arrange
-            var context = GetDbContext();
-            var service = new DeviceService(context);
-
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => service.CreateAsync("Name", invalidBrand!)
+                () => _service.CreateAsync("Name", invalidBrand!)
             );
         }
     }

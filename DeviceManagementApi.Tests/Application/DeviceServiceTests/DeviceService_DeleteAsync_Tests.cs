@@ -1,51 +1,51 @@
-﻿using DeviceManagementApi.Application;
-using DeviceManagementApi.Domain;
-using DeviceManagementApi.Infrastructure;
-using Microsoft.EntityFrameworkCore;
+﻿using DeviceManagementApi.Application.Services;
+using DeviceManagementApi.Domain.Devices.Entities;
+using DeviceManagementApi.Domain.Devices.Repositories;
+using Moq;
 using Xunit;
 
 namespace DeviceManagementApi.Tests.Application.DeviceServiceTests
 {
     public class DeviceService_DeleteAsync_Tests
     {
-        private static DeviceManagementDbContext GetDbContext()
-        {
-            var options = new DbContextOptionsBuilder<DeviceManagementDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+        private readonly Mock<IDeviceRepository> _mockRepo;
+        private readonly DeviceService _service;
 
-            return new DeviceManagementDbContext(options);
+        public DeviceService_DeleteAsync_Tests()
+        {
+            _mockRepo = new Mock<IDeviceRepository>();
+            _service = new DeviceService(_mockRepo.Object);
         }
 
         [Fact]
         public async Task DeleteAsync_Should_Delete_Device()
         {
             // Arrange
-            var context = GetDbContext();
-            var service = new DeviceService(context);
-            var device = await service.CreateAsync("Name", "Brand");
+            var device = new Device("Name", "Brand");
+            _mockRepo.Setup(r => r.GetByIdAsync(device.Id))
+                     .ReturnsAsync(device);
 
             // Act
-            var result = await service.DeleteAsync(device.Id);
+            var result = await _service.DeleteAsync(device.Id);
 
             // Assert
             Assert.True(result);
-            Assert.Null(await service.GetByIdAsync(device.Id));
+            _mockRepo.Verify(r => r.Delete(device), Times.Once);
+            _mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
         public async Task DeleteAsync_DeviceInUse_Should_Throw()
         {
             // Arrange
-            var context = GetDbContext();
-            var service = new DeviceService(context);
-            var device = await service.CreateAsync("Name", "Brand");
+            var device = new Device("Name", "Brand");
             device.ChangeState(DeviceState.InUse);
-            await context.SaveChangesAsync();
+            _mockRepo.Setup(r => r.GetByIdAsync(device.Id))
+                     .ReturnsAsync(device);
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => service.DeleteAsync(device.Id)
+                () => _service.DeleteAsync(device.Id)
             );
         }
 
@@ -53,33 +53,34 @@ namespace DeviceManagementApi.Tests.Application.DeviceServiceTests
         public async Task DeleteAsync_NonExistingDevice_Should_Return_Null()
         {
             // Arrange
-            var context = GetDbContext();
-            var service = new DeviceService(context);
+            _mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+                     .ReturnsAsync((Device?)null);
 
             // Act
-            var result = await service.DeleteAsync(Guid.NewGuid());
+            var result = await _service.DeleteAsync(Guid.NewGuid());
 
             // Assert
             Assert.Null(result);
+            _mockRepo.Verify(r => r.Delete(It.IsAny<Device>()), Times.Never);
+            _mockRepo.Verify(r => r.SaveChangesAsync(), Times.Never);
         }
 
         [Fact]
         public async Task DeleteAsync_InactiveDevice_Should_Delete()
         {
             // Arrange
-            var context = GetDbContext();
-            var service = new DeviceService(context);
-            var device = await service.CreateAsync("Name", "Brand");
+            var device = new Device("Name", "Brand");
             device.ChangeState(DeviceState.Inactive);
-            await context.SaveChangesAsync();
+            _mockRepo.Setup(r => r.GetByIdAsync(device.Id))
+                     .ReturnsAsync(device);
 
             // Act
-            var result = await service.DeleteAsync(device.Id);
+            var result = await _service.DeleteAsync(device.Id);
 
             // Assert
             Assert.True(result);
-            Assert.Null(await service.GetByIdAsync(device.Id));
+            _mockRepo.Verify(r => r.Delete(device), Times.Once);
+            _mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
-
     }
 }
