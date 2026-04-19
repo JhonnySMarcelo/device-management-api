@@ -1,6 +1,6 @@
 # Device Management API
 
-A .NET 10 Web API for managing devices, including CRUD operations, filtering by brand and state, with Swagger documentation and Docker support.
+A .NET 10 Web API for managing devices, including CRUD operations, combined filtering by brand and state, with Swagger documentation, Docker support, and a fully covered service layer with unit tests.
 
 ---
 
@@ -11,6 +11,7 @@ A .NET 10 Web API for managing devices, including CRUD operations, filtering by 
 - SQL Server
 - Docker
 - Swagger / OpenAPI
+- xUnit (unit testing)
 
 ---
 
@@ -77,15 +78,19 @@ Swagger will be available at: `http://localhost:8080/swagger/index.html`
 
 ## API Endpoints
 
-| Method | Endpoint               | Description                   |
-| ------ | ---------------------- | ----------------------------- |
-| POST   | /devices               | Create a new device           |
-| GET    | /devices               | Get all devices               |
-| GET    | /devices/{id}          | Get device by ID              |
-| GET    | /devices/brand/{brand} | Get devices filtered by brand |
-| GET    | /devices/state/{state} | Get devices filtered by state |
-| PATCH  | /devices/{id}          | Update a device               |
-| DELETE | /devices/{id}          | Delete a device               |
+| Method | Endpoint      | Description                        |
+| ------ | ------------- | ---------------------------------- |
+| POST   | /devices      | Create a new device                |
+| GET    | /devices      | Get all devices (supports filters) |
+| GET    | /devices/{id} | Get device by ID                   |
+| PATCH  | /devices/{id} | Update a device                    |
+| DELETE | /devices/{id} | Delete a device                    |
+
+**Note:** Filtering by `brand` and `state` can be combined in a single request using query parameters, e.g.:
+
+```
+GET /devices?brand=Samsung&state=Available
+```
 
 ---
 
@@ -102,8 +107,9 @@ Swagger will be available at: `http://localhost:8080/swagger/index.html`
 - Device `Name` and `Brand` are required
 - Devices are created with state `Available`
 - Creation time is automatically assigned
-- Devices in use **cannot be deleted**
-- Name and Brand **cannot be changed** if device is in use
+- Devices `InUse` **cannot be deleted**
+- `Name` and `Brand` **cannot be changed** if device is `InUse`
+- `State` can be changed even if the device is `InUse`.
 
 ---
 
@@ -120,10 +126,11 @@ dotnet test
 
 Tests cover service layer logic, including:
 
-- Device creation with required fields.
-- Updating devices with business rules.
-- Deletion and conflict scenarios.
-- Filtering logic by brand and state.
+- Device creation with required fields and validations.
+- Updating devices with business rules (restrictions and allowed changes).
+- Deletion scenarios (valid, invalid, in use, inactive).
+- Filtering logic by brand and state (including combined filters).
+- Error scenarios (invalid inputs, non-existing devices).
 
 ---
 
@@ -154,10 +161,6 @@ This section outlines potential improvements and missing features.
 - _Global Exception Handling Middleware_
   - Business rule conflicts (InvalidOperationException) are currently handled in controllers individually.
   - Future improvement: implement a global exception handling middleware to capture all unhandled exceptions, standardize the response with ProblemDetails, and log errors consistently.
-
-- _Request Validation_
-  - Input validation currently relies on basic checks in DTOs.
-  - Future improvement: use FluentValidation or DataAnnotations for robust request validation and standardized ValidationProblemDetails responses.
 
 - _Swagger examples_
   - Add example for all requests for all endpoints incluinding minimal and complete examples
