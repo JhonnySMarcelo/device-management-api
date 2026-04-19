@@ -1,151 +1,142 @@
-﻿//using DeviceManagementApi.Application;
-//using DeviceManagementApi.Application.DTOs;
-//using DeviceManagementApi.Domain.Devices.Entities;
-//using DeviceManagementApi.Infrastructure.Persistence;
-//using Microsoft.EntityFrameworkCore;
-//using Xunit;
+﻿using DeviceManagementApi.Application.Services;
+using DeviceManagementApi.Application.DTOs;
+using DeviceManagementApi.Domain.Devices.Entities;
+using DeviceManagementApi.Domain.Devices.Repositories;
+using Moq;
+using Xunit;
 
-//namespace DeviceManagementApi.Tests.Application.DeviceServiceTests
-//{
-//    public class DeviceService_UpdateAsync_Tests
-//    {
-//        private static DeviceManagementDbContext GetDbContext()
-//        {
-//            var options = new DbContextOptionsBuilder<DeviceManagementDbContext>()
-//                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-//                .Options;
+namespace DeviceManagementApi.Tests.Application.DeviceServiceTests
+{
+    public class DeviceService_UpdateAsync_Tests
+    {
+        private readonly Mock<IDeviceRepository> _mockRepo;
+        private readonly DeviceService _service;
 
-//            return new DeviceManagementDbContext(options);
-//        }
+        public DeviceService_UpdateAsync_Tests()
+        {
+            _mockRepo = new Mock<IDeviceRepository>();
+            _service = new DeviceService(_mockRepo.Object);
+        }
 
-//        [Fact]
-//        public async Task UpdateAsync_Should_Update_Fields()
-//        {
-//            // Arrange
-//            var context = GetDbContext();
-//            var service = new DeviceService(context);
-//            var device = await service.CreateAsync("OldName", "OldBrand");
+        [Fact]
+        public async Task UpdateAsync_Should_Update_Fields()
+        {
+            // Arrange
+            var device = new Device("OldName", "OldBrand");
+            _mockRepo.Setup(r => r.GetByIdAsync(device.Id))
+                     .ReturnsAsync(device);
 
-//            var updateDto = new UpdateDeviceRequest
-//            {
-//                Name = "NewName",
-//                Brand = "NewBrand",
-//                State = DeviceState.InUse
-//            };
+            var updateDto = new UpdateDeviceRequest
+            {
+                Name = "NewName",
+                Brand = "NewBrand",
+                State = DeviceState.InUse
+            };
 
-//            // Act
-//            var updated = await service.UpdateAsync(device.Id, updateDto);
+            // Act
+            var updated = await _service.UpdateAsync(device.Id, updateDto);
 
-//            // Assert
-//            Assert.Equal("NewName", updated!.Name);
-//            Assert.Equal("NewBrand", updated.Brand);
-//            Assert.Equal(DeviceState.InUse, updated.State);
-//        }
+            // Assert
+            Assert.Equal("NewName", updated!.Name);
+            Assert.Equal("NewBrand", updated.Brand);
+            Assert.Equal(DeviceState.InUse, updated.State);
+        }
 
-//        [Fact]
-//        public async Task UpdateAsync_DeviceInUse_Should_Not_Change_NameOrBrand()
-//        {
-//            // Arrange
-//            var context = GetDbContext();
-//            var service = new DeviceService(context);
-//            var device = await service.CreateAsync("OldName", "OldBrand");
-//            device.ChangeState(DeviceState.InUse);
-//            await context.SaveChangesAsync();
+        [Fact]
+        public async Task UpdateAsync_DeviceInUse_Should_Not_Change_NameOrBrand()
+        {
+            var device = new Device("OldName", "OldBrand");
+            device.ChangeState(DeviceState.InUse);
 
-//            var updateDto = new UpdateDeviceRequest
-//            {
-//                Name = "NewName",
-//                Brand = "NewBrand",
-//                State = DeviceState.Available
-//            };
+            _mockRepo.Setup(r => r.GetByIdAsync(device.Id))
+                     .ReturnsAsync(device);
 
-//            // Act & Assert
-//            await Assert.ThrowsAsync<InvalidOperationException>(
-//                () => service.UpdateAsync(device.Id, updateDto)
-//            );
-//        }
+            var updateDto = new UpdateDeviceRequest
+            {
+                Name = "NewName",
+                Brand = "NewBrand",
+                State = DeviceState.Available
+            };
 
-//        [Fact]
-//        public async Task UpdateAsync_NonExistingDevice_Should_Return_Null()
-//        {
-//            // Arrange
-//            var context = GetDbContext();
-//            var service = new DeviceService(context);
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.UpdateAsync(device.Id, updateDto)
+            );
+        }
 
-//            var updateDto = new UpdateDeviceRequest
-//            {
-//                Name = "Name",
-//                Brand = "Brand",
-//                State = DeviceState.Available
-//            };
+        [Fact]
+        public async Task UpdateAsync_NonExistingDevice_Should_Return_Null()
+        {
+            _mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+                     .ReturnsAsync((Device?)null);
 
-//            // Act
-//            var result = await service.UpdateAsync(Guid.NewGuid(), updateDto);
+            var updateDto = new UpdateDeviceRequest
+            {
+                Name = "Name",
+                Brand = "Brand",
+                State = DeviceState.Available
+            };
 
-//            // Assert
-//            Assert.Null(result);
-//        }
+            var result = await _service.UpdateAsync(Guid.NewGuid(), updateDto);
 
-//        [Fact]
-//        public async Task UpdateAsync_OnlyStateProvided_Should_Update_State()
-//        {
-//            // Arrange
-//            var context = GetDbContext();
-//            var service = new DeviceService(context);
-//            var device = await service.CreateAsync("Name", "Brand");
+            Assert.Null(result);
+        }
 
-//            var request = new UpdateDeviceRequest
-//            {
-//                State = DeviceState.InUse
-//            };
+        [Fact]
+        public async Task UpdateAsync_OnlyStateProvided_Should_Update_State()
+        {
+            var device = new Device("Name", "Brand");
+            _mockRepo.Setup(r => r.GetByIdAsync(device.Id))
+                     .ReturnsAsync(device);
 
-//            // Act
-//            var updated = await service.UpdateAsync(device.Id, request);
+            var request = new UpdateDeviceRequest
+            {
+                State = DeviceState.InUse
+            };
 
-//            // Assert
-//            Assert.NotNull(updated);
-//            Assert.Equal(DeviceState.InUse, updated!.State);
-//            Assert.Equal("Name", updated.Name);
-//            Assert.Equal("Brand", updated.Brand);
-//        }
+            var updated = await _service.UpdateAsync(device.Id, request);
 
-//        [Fact]
-//        public async Task UpdateAsync_EmptyRequest_Should_Not_Change_Device()
-//        {
-//            var context = GetDbContext();
-//            var service = new DeviceService(context);
-//            var device = await service.CreateAsync("Name", "Brand");
+            Assert.NotNull(updated);
+            Assert.Equal(DeviceState.InUse, updated!.State);
+            Assert.Equal("Name", updated.Name);
+            Assert.Equal("Brand", updated.Brand);
+        }
 
-//            var request = new UpdateDeviceRequest();
+        [Fact]
+        public async Task UpdateAsync_EmptyRequest_Should_Not_Change_Device()
+        {
+            var device = new Device("Name", "Brand");
+            _mockRepo.Setup(r => r.GetByIdAsync(device.Id))
+                     .ReturnsAsync(device);
 
-//            var updated = await service.UpdateAsync(device.Id, request);
+            var request = new UpdateDeviceRequest();
 
-//            Assert.Equal("Name", updated!.Name);
-//            Assert.Equal("Brand", updated.Brand);
-//            Assert.Equal(DeviceState.Available, updated.State);
-//        }
+            var updated = await _service.UpdateAsync(device.Id, request);
 
-//        [Fact]
-//        public async Task UpdateAsync_DeviceInUse_Should_Allow_State_Change()
-//        {
-//            var context = GetDbContext();
-//            var service = new DeviceService(context);
-//            var device = await service.CreateAsync("Name", "Brand");
-//            device.ChangeState(DeviceState.InUse);
-//            await context.SaveChangesAsync();
+            Assert.Equal("Name", updated!.Name);
+            Assert.Equal("Brand", updated.Brand);
+            Assert.Equal(DeviceState.Available, updated.State);
+        }
 
-//            var request = new UpdateDeviceRequest
-//            {
-//                State = DeviceState.Available
-//            };
+        [Fact]
+        public async Task UpdateAsync_DeviceInUse_Should_Allow_State_Change()
+        {
+            var device = new Device("Name", "Brand");
+            device.ChangeState(DeviceState.InUse);
 
-//            var updated = await service.UpdateAsync(device.Id, request);
+            _mockRepo.Setup(r => r.GetByIdAsync(device.Id))
+                     .ReturnsAsync(device);
 
-//            Assert.NotNull(updated);
-//            Assert.Equal(DeviceState.Available, updated!.State);
-//            Assert.Equal("Name", updated.Name);
-//            Assert.Equal("Brand", updated.Brand);
-//        }
+            var request = new UpdateDeviceRequest
+            {
+                State = DeviceState.Available
+            };
 
-//    }
-//}
+            var updated = await _service.UpdateAsync(device.Id, request);
+
+            Assert.NotNull(updated);
+            Assert.Equal(DeviceState.Available, updated!.State);
+            Assert.Equal("Name", updated.Name);
+            Assert.Equal("Brand", updated.Brand);
+        }
+    }
+}
