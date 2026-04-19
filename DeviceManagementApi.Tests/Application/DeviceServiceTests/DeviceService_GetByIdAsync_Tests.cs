@@ -1,64 +1,64 @@
-﻿//using DeviceManagementApi.Application;
-//using DeviceManagementApi.Infrastructure.Persistence;
-//using Microsoft.EntityFrameworkCore;
-//using Xunit;
+﻿using DeviceManagementApi.Application.Services;
+using DeviceManagementApi.Domain.Devices.Entities;
+using DeviceManagementApi.Domain.Devices.Repositories;
+using Moq;
+using Xunit;
 
-//namespace DeviceManagementApi.Tests.Application.DeviceServiceTests
-//{
-//    public class DeviceService_GetByIdAsync_Tests
-//    {
-//        private static DeviceManagementDbContext GetDbContext()
-//        {
-//            var options = new DbContextOptionsBuilder<DeviceManagementDbContext>()
-//                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-//                .Options;
+namespace DeviceManagementApi.Tests.Application.DeviceServiceTests
+{
+    public class DeviceService_GetByIdAsync_Tests
+    {
+        private readonly Mock<IDeviceRepository> _mockRepo;
+        private readonly DeviceService _service;
 
-//            return new DeviceManagementDbContext(options);
-//        }
+        public DeviceService_GetByIdAsync_Tests()
+        {
+            _mockRepo = new Mock<IDeviceRepository>();
+            _service = new DeviceService(_mockRepo.Object);
+        }
 
-//        [Fact]
-//        public async Task GetByIdAsync_Should_Return_Device()
-//        {
-//            // Arrange
-//            var context = GetDbContext();
-//            var service = new DeviceService(context);
-//            var created = await service.CreateAsync("Sensor", "Bosch");
+        [Fact]
+        public async Task GetByIdAsync_Should_Return_Device()
+        {
+            // Arrange
+            var device = new Device("Sensor", "Bosch");
+            _mockRepo.Setup(r => r.GetByIdAsync(device.Id))
+                     .ReturnsAsync(device);
 
-//            // Act
-//            var fetched = await service.GetByIdAsync(created.Id);
+            // Act
+            var fetched = await _service.GetByIdAsync(device.Id);
 
-//            // Assert
-//            Assert.NotNull(fetched);
-//            Assert.Equal(created.Id, fetched!.Id);
-//        }
+            // Assert
+            Assert.NotNull(fetched);
+            Assert.Equal(device.Id, fetched!.Id);
+        }
 
-//        [Fact]
-//        public async Task GetByIdAsync_InvalidId_Should_Return_Null()
-//        {
-//            // Arrange
-//            var context = GetDbContext();
-//            var service = new DeviceService(context);
+        [Fact]
+        public async Task GetByIdAsync_InvalidId_Should_Return_Null()
+        {
+            // Arrange
+            _mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+                     .ReturnsAsync((Device?)null);
 
-//            // Act
-//            var fetched = await service.GetByIdAsync(Guid.NewGuid());
+            // Act
+            var fetched = await _service.GetByIdAsync(Guid.NewGuid());
 
-//            // Assert
-//            Assert.Null(fetched);
-//        }
+            // Assert
+            Assert.Null(fetched);
+        }
 
-//        [Fact]
-//        public async Task GetByIdAsync_EmptyGuid_Should_Return_Null()
-//        {
-//            // Arrange
-//            var context = GetDbContext();
-//            var service = new DeviceService(context);
+        [Fact]
+        public async Task GetByIdAsync_EmptyGuid_Should_Return_Null()
+        {
+            // Arrange
+            _mockRepo.Setup(r => r.GetByIdAsync(Guid.Empty))
+                     .ReturnsAsync((Device?)null);
 
-//            // Act
-//            var result = await service.GetByIdAsync(Guid.Empty);
+            // Act
+            var result = await _service.GetByIdAsync(Guid.Empty);
 
-//            // Assert
-//            Assert.Null(result);
-//        }
-
-//    }
-//}
+            // Assert
+            Assert.Null(result);
+        }
+    }
+}
